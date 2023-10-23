@@ -1,6 +1,9 @@
 # bulk-action-importer
 This project is intended as a template for creating a shell/batch script that will upload bulk action CSV files to the [CloudCard Online Photo Submission](https://onlinephotosubmission.com/) bulk action API endpoint.
 
+### Network Diagram
+[![Network Diagram](http://online-photo-submission.github.io/bulk-action-importer/network-diagram.jpg)]
+
 ### See also the following CloudCard Documentation:
 - User's Guide: 
   - [Bulk Import/Create Cardholders](https://sharptop.atlassian.net/wiki/spaces/CCD/pages/24903725/Bulk+Import+Create+Cardholders)
