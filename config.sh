@@ -1,7 +1,7 @@
 #!/bin/bash
 
-IMPORT_DIRECTORY="/Users/terskine/git/cloudcard/bulk-action-importer/new"
-DONE_DIRECTORY="/Users/terskine/git/cloudcard/bulk-action-importer/done"
+IMPORT_DIRECTORY=""
+DONE_DIRECTORY=""
 API_URL="https://api.onlinephotosubmission.com"
 PERSISTENT_ACCESS_TOKEN=""
 
