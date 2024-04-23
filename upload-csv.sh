@@ -19,11 +19,22 @@ fi
 
 >&2 echo "Sending $FILE to $API_URL"
 
-COLUMN_NAMES="$3"
+SESSION_TOKEN="$3"
+
+if [ -z "$SESSION_TOKEN" ]; then
+    echo "SESSION_TOKEN is required as the 3rd arg"
+    exit 1
+fi
+
+COLUMN_NAMES="$4"
+
+# to set a custom field seperator (i.e. pipe, slash, etc) add the following to the curl command.
+# --form "fieldSeparator=|"
 
 # to set the column names add the following to the curl command
 # --form "columnNames=\"$COLUMN_NAMES\""
 
 # to set the default action add the following to the curl command
 # --form "actionDefault=\"$ACTION_DEFAULT\""
-curl -i --location "$API_URL/bulk-action" --header "X-Auth-Token: $SESSION_TOKEN" --form "csv=@\"$FILE\""
+
+curl --location "$API_URL/bulk-action" --header "X-Auth-Token: $SESSION_TOKEN" --form "csv=@\"$FILE\""
