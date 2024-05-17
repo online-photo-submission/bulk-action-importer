@@ -16,16 +16,9 @@ if "%API_URL%"=="" (
     exit /b 1
 )
 
-set SESSION_TOKEN=%3
-
-if "%SESSION_TOKEN%"=="" (
-    echo SESSION_TOKEN is required as the 3Rd arg
-    exit /b 1
-)
-
 echo Sending %FILE% to %API_URL%
 
-set COLUMN_NAMES=%4
+set COLUMN_NAMES=%3
 
 REM to set the column names add the following to the curl command
 REM --form "columnNames=\"%COLUMN_NAMES%\""
