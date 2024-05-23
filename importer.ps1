@@ -33,7 +33,7 @@ Get-ChildItem -Path $IMPORT_DIRECTORY -Filter *.csv | ForEach-Object {
 
     .\upload-csv.ps1 $IMPORT_DIRECTORY $_ $API_URL $SESSION_TOKEN $ACTION_DEFAULT #$COLUMN_NAMES
 
-    Move-Item $_ $DONE_DIRECTORY
+    Move-Item $IMPORT_DIRECTORY\$_ $DONE_DIRECTORY
     Write-Host "`ncompleted: $($_)"
 }
 
