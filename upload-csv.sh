@@ -32,7 +32,7 @@ COLUMN_NAMES="$4"
 # --form "fieldSeparator=|"
 
 # to set the column names add the following to the curl command
-# --form "columnNames=\"$COLUMN_NAMES\""
+# --form "columnNames=$COLUMN_NAMES"
 
 # to set the default action add the following to the curl command
 # --form "actionDefault=\"$ACTION_DEFAULT\""

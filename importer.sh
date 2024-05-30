@@ -29,7 +29,7 @@ SESSION_TOKEN=$(echo $response | grep -o '"tokenValue":"[^"]*' | sed 's/"tokenVa
 # iterate over the CSVs in the import directory and upload each to the bulk action endpoint
 for FILE in $IMPORT_DIRECTORY/*.csv
 do 
-    ./upload-csv.sh $FILE $API_URL $SESSION_TOKEN $COLUMN_NAMES
+    ./upload-csv.sh $FILE $API_URL $SESSION_TOKEN "$COLUMN_NAMES"
 
     mv $FILE $DONE_DIRECTORY
     echo "completed: $FILE"
