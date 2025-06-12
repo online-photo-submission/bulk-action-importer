@@ -1,8 +1,8 @@
 # bulk-action-importer
-This project is intended as a template for creating bash/powershell scripts for automatically uploading bulk action CSV files to the [CloudCard Online Photo Submission](https://onlinephotosubmission.com/) bulk action API endpoint.
+This project is intended as a template for creating bash/powershell scripts for automatically uploading bulk action CSV files to the [RemotePhoto](https://remotephoto.ai/) bulk action API endpoint.
 
 > [!IMPORTANT]
-> CloudCard actively maintains this project and keeps it fully compatible with all CloudCard Online Photo Submission environments, including those managed by our partners.
+> CloudCard actively maintains this project and keeps it fully compatible with all RemotePhoto environments, including those managed by our partners.
 > However, using this project is not directly supported by CloudCard or any partner unless your contract specifically includes it.
 
 ### Network Diagram
