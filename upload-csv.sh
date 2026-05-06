@@ -26,7 +26,13 @@ if [ -z "$SESSION_TOKEN" ]; then
     exit 1
 fi
 
-COLUMN_NAMES="$4"
+shift 3
+FORM_FIELDS=("$@")
+
+# Backwards compatibility: older callers passed COLUMN_NAMES as the 4th arg.
+if [ "${#FORM_FIELDS[@]}" -eq 1 ] && [ -n "${FORM_FIELDS[0]}" ] && [[ "${FORM_FIELDS[0]}" != *=* ]]; then
+    FORM_FIELDS=("columnNames=${FORM_FIELDS[0]}")
+fi
 
 # to set a custom field seperator (i.e. pipe, slash, etc) add the following to the curl command.
 # --form "fieldSeparator=|"
@@ -37,4 +43,24 @@ COLUMN_NAMES="$4"
 # to set the default action add the following to the curl command
 # --form "actionDefault=\"$ACTION_DEFAULT\""
 
-curl --location "$API_URL/bulk-action" --header "X-Auth-Token: $SESSION_TOKEN" --form "csv=@\"$FILE\""
+curl_args=(
+    --location "$API_URL/bulk-action"
+    --header "X-Auth-Token: $SESSION_TOKEN"
+    --form "csv=@$FILE"
+)
+
+for FORM_FIELD in "${FORM_FIELDS[@]}"
+do
+    if [ -z "$FORM_FIELD" ]; then
+        continue
+    fi
+
+    if [[ "$FORM_FIELD" != *=* ]]; then
+        echo "Bulk action form field must be key=value: $FORM_FIELD"
+        exit 1
+    fi
+
+    curl_args+=(--form-string "$FORM_FIELD")
+done
+
+curl "${curl_args[@]}"
