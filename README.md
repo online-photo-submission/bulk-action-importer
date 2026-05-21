@@ -23,6 +23,9 @@ This project is intended as a template for creating bash/powershell scripts for 
     - If you are on a Windows, delete all irrelevant `.sh` files
 
 ## Configuration Settings
+### New Remote Config Setting
+
+### Traditional Set Up
 Modify the values in `config.sh`.  Some changes, such as explicitly specifying column names, also require changes to the `curl` command in `upload-csv.sh`.
 
 - `IMPORT_DIRECTORY`
