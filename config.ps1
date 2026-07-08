@@ -1,8 +1,26 @@
-# Set config variables
+# Set config variables (Windows / PowerShell)
+# This file is the PowerShell counterpart of config.sh and uses the same keys.
 
-$IMPORT_DIRECTORY = "C:\import-directory"
-$DONE_DIRECTORY = "C:\done-directory"
-$API_URL = "https://api.onlinephotosubmission.com"
-$PERSISTENT_ACCESS_TOKEN = "token_value_here"
+# IMPORT_DIRECTORY / DONE_DIRECTORY can be managed here locally OR in RemotePhoto
+# via Remote Config (recommended). If set in both places, the Remote Config value wins.
+$IMPORT_DIRECTORY = "*your csv import directory*"
+$DONE_DIRECTORY = "*your done directory*"
+$API_URL = "*your api url*"
+$PERSISTENT_ACCESS_TOKEN = "*your persistent access token*"
+
+# Set to $true to pull the rest of your configuration from RemotePhoto.
+$REMOTE_CONFIG_ENABLED = $false
+
+# When REMOTE_CONFIG_ENABLED is $true, this must match your integration name
+# exactly as it appears in RemotePhoto.
+$INTEGRATION_NAME = "*if using the remote_config setting, this will be your integration name as it appears in RemotePhoto*"
+
+# it's best to specify the column names in the first line of the CSV
+# if you use the 'COLUMN_NAMES' option, the importer will pass it to the bulk action API as 'columnNames'
+# $COLUMN_NAMES = "email,identifier"
+
+# if you use the 'ACTION_DEFAULT' option, the importer will pass it to the bulk action API as 'actionDefault'
 $ACTION_DEFAULT = "CREATE_OR_UPDATE"
-# $COLUMN_NAMES = "your_column_names"
+
+# if you use the 'FIELD_SEPARATOR' option, the importer will pass it to the bulk action API as 'fieldSeparator'
+# $FIELD_SEPARATOR = "|"

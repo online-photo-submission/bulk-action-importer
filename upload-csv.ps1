@@ -1,17 +1,42 @@
+<#
+    Uploads a single CSV file to the RemotePhoto bulk action endpoint.
+    Called by importer.ps1 once per CSV. Mirrors upload-csv.sh.
+
+    Form fields are passed as an array of "key=value" strings so that any
+    bulk-action field (actionDefault, columnNames, fieldSeparator, or a custom
+    one from remote config) can be forwarded without changing this script.
+#>
 param (
-    [Parameter(Mandatory=$true)] [string] $IMPORT_DIRECTORY,
-    [Parameter(Mandatory=$true)][string] $FILE,
-    [Parameter(Mandatory=$true)][string] $API_URL,
-    [Parameter(Mandatory=$true)][string] $SESSION_TOKEN,
-    [Parameter(Mandatory=$false)][string] $ACTION_DEFAULT
-    #[Parameter(Mandatory=$false)[string] $COLUMN_NAMES
+    [Parameter(Mandatory = $true)]  [string]   $File,
+    [Parameter(Mandatory = $true)]  [string]   $ApiUrl,
+    [Parameter(Mandatory = $true)]  [string]   $SessionToken,
+    [Parameter(Mandatory = $false)] [string[]] $FormFields = @()
 )
 
-$ABSOLUTE_PATH = $IMPORT_DIRECTORY+ "\" + $FILE
+$ErrorActionPreference = 'Stop'
 
-$URL = $API_URL + "/bulk-action"
+$url = $ApiUrl.TrimEnd('/') + "/bulk-action"
 
-curl.exe --location $URL --header "X-Auth-Token: $SESSION_TOKEN" --form "csv=@$ABSOLUTE_PATH" --form "actionDefault=$ACTION_DEFAULT"
+Write-Host "Sending $File to $url"
 
-# To allow custom column names to the curl above (and uncomment the parameter on in the params map at the top of this script)
-#--form "columnNames=$COLUMN_NAMES"
+# curl.exe (bundled with Windows 10+) handles multipart uploads cleanly.
+$curlArgs = @(
+    '--location', $url
+    '--header',   "X-Auth-Token: $SessionToken"
+    '--form',     "csv=@$File"
+)
+
+foreach ($field in $FormFields) {
+    if (-not $field) { continue }
+
+    if ($field -notmatch '=') {
+        Write-Host "Bulk action form field must be key=value: $field"
+        exit 1
+    }
+
+    # --form-string keeps the value literal so leading '@'/'<' characters and
+    # spaces in column names are not misinterpreted by curl.
+    $curlArgs += @('--form-string', $field)
+}
+
+curl.exe @curlArgs

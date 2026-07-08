@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# IMPORT_DIRECTORY / DONE_DIRECTORY can be managed here locally OR in RemotePhoto
+# via Remote Config (recommended). If set in both places, the Remote Config value wins.
 IMPORT_DIRECTORY="*your csv import directory*"
 DONE_DIRECTORY="*your done directory*"
 API_URL="*your api url*"

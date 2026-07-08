@@ -303,6 +303,18 @@ logout() {
     fi
 }
 
+# Authenticate once and guarantee we log out on exit. Safe to call repeatedly:
+# it is a no-op once a session token already exists, so both the remote-config
+# path and the upload path can call it without authenticating twice.
+ensure_authenticated() {
+    if [ -n "$SESSION_TOKEN" ]; then
+        return
+    fi
+
+    authenticate
+    trap logout EXIT
+}
+
 fetch_remote_config() {
     local encoded_integration_name remote_config_url remote_config
 
@@ -391,41 +403,51 @@ print_config() {
     echo "$LOG_SEPARATOR"
 }
 
-require_config_value "API_URL" "${API_URL:-}"
-require_config_value "PERSISTENT_ACCESS_TOKEN" "${PERSISTENT_ACCESS_TOKEN:-}"
+# ------------------------------------------------------------------------------
+# Entry point
+# ------------------------------------------------------------------------------
+main() {
+    local csv_files FILE
 
-add_local_form_field_defaults
+    # These two settings must always be present locally; everything else can
+    # come from the cloud when remote config is enabled.
+    require_config_value "API_URL" "${API_URL:-}"
+    require_config_value "PERSISTENT_ACCESS_TOKEN" "${PERSISTENT_ACCESS_TOKEN:-}"
 
-if remote_config_enabled; then
-    authenticate
-    trap logout EXIT
-    fetch_remote_config
-fi
+    # Seed the form fields from local config first so remote config can override.
+    add_local_form_field_defaults
 
-print_config
-validate_directories
+    # When remote config is on we must authenticate before we can fetch it.
+    if remote_config_enabled; then
+        ensure_authenticated
+        fetch_remote_config
+    fi
 
-shopt -s nullglob
-csv_files=("$IMPORT_DIRECTORY"/*.csv)
+    print_config
+    validate_directories
 
-if [ "${#csv_files[@]}" -eq 0 ]; then
-    echo "IMPORT_DIRECTORY contains no CSV files. Nothing to import. Exiting now."
-    exit 0
-fi
+    shopt -s nullglob
+    csv_files=("$IMPORT_DIRECTORY"/*.csv)
 
-if [ -z "$SESSION_TOKEN" ]; then
-    authenticate
-    trap logout EXIT
-fi
+    if [ "${#csv_files[@]}" -eq 0 ]; then
+        echo "IMPORT_DIRECTORY contains no CSV files. Nothing to import. Exiting now."
+        exit 0
+    fi
 
-build_form_field_args
+    # Authenticate now if remote config was disabled (no session yet).
+    ensure_authenticated
 
-# iterate over the CSVs in the import directory and upload each to the bulk action endpoint
-for FILE in "${csv_files[@]}"
-do
-    "$SCRIPT_DIR/upload-csv.sh" "$FILE" "$API_URL" "$SESSION_TOKEN" "${FORM_FIELD_ARGS[@]}"
+    build_form_field_args
 
-    mv "$FILE" "$DONE_DIRECTORY"
-    echo "completed: $FILE"
-    echo "$LOG_SEPARATOR"
-done
+    # Upload each CSV, then move it to the done directory so it is not re-sent.
+    for FILE in "${csv_files[@]}"
+    do
+        "$SCRIPT_DIR/upload-csv.sh" "$FILE" "$API_URL" "$SESSION_TOKEN" "${FORM_FIELD_ARGS[@]}"
+
+        mv "$FILE" "$DONE_DIRECTORY"
+        echo "completed: $FILE"
+        echo "$LOG_SEPARATOR"
+    done
+}
+
+main "$@"
