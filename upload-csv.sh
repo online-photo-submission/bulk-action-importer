@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Uploads a single CSV file to the RemotePhoto bulk action endpoint.
+# Called by importer.sh once per CSV. This script is pure transport: it performs
+# the request and reports the result back to the importer, which does the logging.
+#
+# Contract with the caller:
+#   - stdout: the HTTP status code on the first line, then the response body.
+#   - exit code: 0 when the API returns 2xx, non-zero otherwise.
+
 set -e
 
 FILE="$1"
@@ -9,15 +17,12 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-
 API_URL="$2"
 
 if [ -z "$API_URL" ]; then
     echo "API_URL is required as the 2nd arg"
     exit 1
 fi
-
->&2 echo "Sending $FILE to $API_URL"
 
 SESSION_TOKEN="$3"
 
@@ -34,17 +39,8 @@ if [ "${#FORM_FIELDS[@]}" -eq 1 ] && [ -n "${FORM_FIELDS[0]}" ] && [[ "${FORM_FI
     FORM_FIELDS=("columnNames=${FORM_FIELDS[0]}")
 fi
 
-# to set a custom field seperator (i.e. pipe, slash, etc) add the following to the curl command.
-# --form "fieldSeparator=|"
-
-# to set the column names add the following to the curl command
-# --form "columnNames=$COLUMN_NAMES"
-
-# to set the default action add the following to the curl command
-# --form "actionDefault=\"$ACTION_DEFAULT\""
-
 curl_args=(
-    --location "$API_URL/bulk-action"
+    --location "${API_URL%/}/bulk-action"
     --header "X-Auth-Token: $SESSION_TOKEN"
     --form "csv=@$FILE"
 )
@@ -56,11 +52,34 @@ do
     fi
 
     if [[ "$FORM_FIELD" != *=* ]]; then
-        echo "Bulk action form field must be key=value: $FORM_FIELD"
+        # Signal a config problem to the caller (status 0 = "no HTTP call made").
+        printf '0\nBulk action form field must be key=value: %s' "$FORM_FIELD"
         exit 1
     fi
 
+    # --form-string keeps the value literal so spaces in column names and
+    # special characters (@, <) are not misinterpreted by curl.
     curl_args+=(--form-string "$FORM_FIELD")
 done
 
-curl "${curl_args[@]}"
+# Capture the response body and HTTP status. No --fail: curl returns 0 even on a
+# 4xx/5xx, so we inspect the status ourselves and let the caller decide.
+set +e
+response="$(curl --silent --show-error -w $'\n%{http_code}' "${curl_args[@]}" 2>&1)"
+curl_rc=$?
+set -e
+
+http_code="${response##*$'\n'}"
+body="${response%$'\n'*}"
+
+printf '%s\n%s' "$http_code" "$body"
+
+# A transport-level failure (DNS, TLS, connection refused) has no HTTP status.
+if [ "$curl_rc" -ne 0 ]; then
+    exit 1
+fi
+
+case "$http_code" in
+    2*) exit 0 ;;
+    *)  exit 1 ;;
+esac

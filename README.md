@@ -103,6 +103,14 @@ $INTEGRATION_NAME = "Your Integration Name"
 > `IMPORT_DIRECTORY` and `DONE_DIRECTORY` in your local config file. If you set them in
 > both places, the Remote Config value wins.
 
+**Optional local settings** (all have sensible defaults — leave them unless you need to change them):
+
+| Setting | Description |
+|---------|-------------|
+| `FAILED_DIRECTORY` | Where CSVs the API rejects are moved. Defaults to a `failed/` folder next to the importer. Can also be set via Remote Config. |
+| `LOG_DIRECTORY` | Where dated log files are written. Defaults to a `logs/` folder next to the importer. |
+| `DEBUG` | Set to `true` / `$true` for verbose request tracing in the logs (tokens are always redacted). Defaults to off. |
+
 ---
 
 ## Step 2 — Remote configuration (in RemotePhoto)
@@ -114,7 +122,8 @@ you need to that integration:
 | Property | Description |
 |----------|-------------|
 | `importDirectory` | Absolute path to the folder your CSV files are placed in. *(Recommended here, or set `IMPORT_DIRECTORY` locally — see Step 1.)* |
-| `doneDirectory` | Absolute path to the folder processed CSV files are moved to. *(Recommended here, or set `DONE_DIRECTORY` locally — see Step 1.)* |
+| `doneDirectory` | Absolute path to the folder successful CSV files are moved to. *(Recommended here, or set `DONE_DIRECTORY` locally — see Step 1.)* |
+| `failedDirectory` | Absolute path to the folder rejected CSV files are moved to. *(Optional; or set `FAILED_DIRECTORY` locally — see Step 1.)* |
 | `actionDefault` | The default bulk-action verb applied to each row (see table below). |
 | `columnNames` | Comma-separated column names, if your CSV has no header row (e.g. `email,identifier`). |
 | `fieldSeparator` | A custom delimiter if your files don't use commas (e.g. `\|`). |
@@ -167,7 +176,20 @@ To run automatically, schedule the script with **cron** (Mac/Linux) or **Task
 Scheduler** (Windows).
 
 Each run prints a configuration summary (with the token masked), uploads every `*.csv`
-in the import directory, moves processed files to the done directory, and logs out.
+in the import directory, moves each file based on the result, and logs out.
+
+### Logs & failed files
+
+- **Logs:** every run appends to a dated log file, `logs/importer-YYYY-MM-DD.log`
+  (override the location with `LOG_DIRECTORY`). The log includes the config summary,
+  each file's outcome, and a run summary. Tokens are always redacted. Set `DEBUG=true`
+  for verbose request tracing when troubleshooting.
+- **Successful files** move to your **done** directory.
+- **Rejected files** (the API returned an error for them) move to your **failed**
+  directory — never silently lost — and the API's error is written to the log. Fix the
+  file and drop it back into the import directory to retry.
+- The importer **exits with a non-zero status if any file failed**, so a scheduled task
+  can alert you.
 
 ---
 

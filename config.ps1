@@ -24,3 +24,18 @@ $ACTION_DEFAULT = "CREATE_OR_UPDATE"
 
 # if you use the 'FIELD_SEPARATOR' option, the importer will pass it to the bulk action API as 'fieldSeparator'
 # $FIELD_SEPARATOR = "|"
+
+# --- Logging & failed-file handling (all optional) ---
+
+# FAILED_DIRECTORY: CSVs the API rejects are moved here instead of the done
+# directory, so failures are never lost. Defaults to a "failed" folder next to
+# the importer. Can also be managed via Remote Config.
+# $FAILED_DIRECTORY = "C:\failed-directory"
+
+# LOG_DIRECTORY: dated log files (importer-YYYY-MM-DD.log) are written here.
+# Defaults to a "logs" folder next to the importer.
+# $LOG_DIRECTORY = "C:\log-directory"
+
+# DEBUG: set to $true for verbose request tracing (URLs, HTTP status codes) in
+# the logs. Tokens are always redacted.
+$DEBUG = $false
