@@ -1,13 +1,35 @@
 #!/bin/bash
 
-IMPORT_DIRECTORY=""
-DONE_DIRECTORY=""
-API_URL="https://api.onlinephotosubmission.com"
-PERSISTENT_ACCESS_TOKEN=""
+# IMPORT_DIRECTORY / DONE_DIRECTORY can be managed here locally OR in RemotePhoto
+# via Remote Config (recommended). If set in both places, the Remote Config value wins.
+IMPORT_DIRECTORY="*your csv import directory*"
+DONE_DIRECTORY="*your done directory*"
+API_URL="*your api url*"
+PERSISTENT_ACCESS_TOKEN="*your persistent access token*"
+REMOTE_CONFIG_ENABLED=false
+INTEGRATION_NAME="*if using the remote_config setting, this will be your integration name as it appears in RemotePhoto*"
 
 # it's best to specify the column names in the first line of the CSV
-# if you use the 'COLUMN_NAMES' option, also add the appropriate '--form' argument in the curl command in 'upload-csv.sh'
+# if you use the 'COLUMN_NAMES' option, the importer will pass it to the bulk action API as 'columnNames'
 # COLUMN_NAMES="email,identifier"
 
-# if you use the 'ACTION_DEFAULT' option, also add the appropriate '--form' argument in the curl command in 'upload-csv.sh'
-# ACTION_DEFAULT="ARCHIVE"
+# if you use the 'ACTION_DEFAULT' option, the importer will pass it to the bulk action API as 'actionDefault'
+ACTION_DEFAULT="CREATE_OR_UPDATE"
+
+# if you use the 'FIELD_SEPARATOR' option, the importer will pass it to the bulk action API as 'fieldSeparator'
+# FIELD_SEPARATOR="|"
+
+# --- Logging & failed-file handling (all optional) ---
+
+# FAILED_DIRECTORY: CSVs the API rejects are moved here instead of the done
+# directory, so failures are never lost. Defaults to a "failed" folder next to
+# the importer. Can also be managed via Remote Config.
+# FAILED_DIRECTORY="*your failed directory*"
+
+# LOG_DIRECTORY: dated log files (importer-YYYY-MM-DD.log) are written here.
+# Defaults to a "logs" folder next to the importer.
+# LOG_DIRECTORY="*your log directory*"
+
+# DEBUG: set to true for verbose request tracing (URLs, HTTP status codes) in
+# the logs. Tokens are always redacted.
+DEBUG=false
